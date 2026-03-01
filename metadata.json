@@ -1,0 +1,5 @@
+{
+  "name": "NWB Simu",
+  "description": "An 8-deck Baccarat simulator featuring a virtual player with a betting strategy based on natural wins, real-time performance tracking, and Big Road visualization.",
+  "requestFramePermissions": []
+}

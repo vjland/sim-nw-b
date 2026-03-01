@@ -1,0 +1,38 @@
+
+TECHNICAL SPECIFICATION: NWB SIMU (NATURAL WIN BANKER SIMULATOR)
+
+1. OVERVIEW
+A high-fidelity Baccarat simulation dashboard renamed to NWB Simu. It is designed to analyze a specific betting strategy based on whether the previous hand was a "Natural" win (no third card engaged). The system simulates an 8-deck shoe with full casino-standard drawing rules.
+
+2. UI & AESTHETICS
+- Theme: "Zen-Dark" professional dashboard.
+- Colors: Pitch Black (#000000) base, Ebony (#0a0a0a) panels, Burgundy (#8A244B) primary accents.
+- Layout: Fixed-height viewport with tabbed navigation (Performance, Big Road, Game Log).
+- Icons: Lucide (trending-up, layout-grid, list).
+
+3. CORE ENGINE
+- Shoe: 8 decks, Fisher-Yates shuffle.
+- Mechanics: 
+  * Burn card sequence at shoe start.
+  * Standard 3rd card drawing rules for Player and Banker.
+  * Cut card padding (~14 cards) to end the shoe.
+- Data Tracking: Detailed hand history including winner, scores, total card count, and unit profit/loss.
+
+4. BETTING STRATEGY (NEW)
+The simulation tracks the total number of cards dealt in the previous hand:
+- If previous hand was a NATURAL WIN (Total Cards = 4, no 3rd cards drawn): Bet BANKER on upcoming hand.
+- If previous hand was NOT a Natural (Total Cards = 5 or 6, 3rd card engaged): Bet PLAYER on upcoming hand.
+- Ties: Ignored for strategy trigger (uses the last physical hand card count); existing bets on a tie result in a Push (0 PnL).
+
+5. ANALYTICS & VISUALIZATION
+- Performance Chart (Chart.js):
+  * Fixed Y-Axis: -20 to +20 units.
+  * Fixed X-Axis: 0 to 80 hands.
+  * Real-time plotting of the cumulative profit/loss curve using the #8A244B accent.
+- Big Road: A traditional Baccarat pattern grid (6 rows) visualizing streaks and chops with color-coded beads and tie badges.
+- Game Log: A granular table showing every hand's result, the total card count (T-Cards), the bet placed, and the running balance.
+
+6. SIMULATION CONTROLS
+- Play/Pause: Real-time step-by-step simulation.
+- Fast Forward: Instant calculation of the remaining shoe.
+- Speed Control: Adjustable processing delays (Turbo, Fast, Normal, Slow).

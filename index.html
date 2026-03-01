@@ -1,0 +1,737 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NWB</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        theme: {
+                            base: '#000000',    // Pitch black
+                            panel: '#0a0a0a',   // Almost black
+                            border: '#171717',  // Very dark gray
+                            brand: '#38BDF8',   // Electric Blue
+                            text: '#e2e8f0'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <style>
+        /* Tab active state styling */
+        .tab-btn.active {
+            border-bottom-color: #38BDF8; /* Brand color */
+            color: #38BDF8; 
+        }
+        .tab-btn {
+            border-bottom-width: 2px;
+            border-bottom-color: transparent;
+        }
+        /* Custom scrollbar for dark theme - Leaner version & Sharp */
+        ::-webkit-scrollbar {
+            width: 4px;
+            height: 4px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #000000; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #38BDF8; 
+            border-radius: 0px; /* Sharp corners */
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #0C4A6E; /* Darker shade of brand */
+        }
+    </style>
+<link rel="stylesheet" href="/index.css">
+</head>
+<body class="bg-theme-base text-gray-300 overflow-hidden h-screen flex flex-col font-sans selection:bg-[#38BDF8] selection:text-white">
+
+    <!-- Header -->
+    <header class="bg-theme-panel border-b border-theme-border p-4 shadow-lg flex-shrink-0 z-20">
+        <div class="max-w-7xl mx-auto flex flex-row justify-between items-center">
+            
+            <!-- Title -->
+            <div class="flex items-center">
+                <svg width="90" height="32" viewBox="0 0 90 32" fill="none" xmlns="http://www.w3.org/2000/svg" class="h-8 w-auto">
+                    <rect width="90" height="32" rx="2" fill="#38BDF8"/>
+                    <text x="45" y="22" text-anchor="middle" fill="black" font-family="Inter, system-ui, sans-serif" font-weight="900" font-size="16" letter-spacing="0.05em">NW-B</text>
+                </svg>
+            </div>
+
+            <!-- Controls -->
+            <div class="flex items-center gap-4">
+                <!-- Speed Control -->
+                <div class="flex items-center gap-2 text-sm text-gray-400 border-r border-theme-border pr-4">
+                    <label for="speed-select" class="hidden sm:block">Speed:</label>
+                    <select id="speed-select" class="bg-theme-base border border-theme-border px-2 py-1 text-white focus:outline-none focus:border-theme-brand text-xs h-8 rounded-none appearance-none">
+                        <option value="50">Turbo</option>
+                        <option value="500">Fast</option>
+                        <option value="1000" selected>Normal</option>
+                        <option value="2000">Slow</option>
+                    </select>
+                </div>
+
+                <!-- Player Controls (Fused Toolbar) -->
+                <div class="flex items-center bg-theme-base border border-theme-border rounded-none">
+                    <!-- Play/Pause Button -->
+                    <button id="btn-toggle" class="flex items-center justify-center w-24 py-1.5 hover:bg-theme-border hover:text-theme-brand transition-colors text-gray-400 group relative border-r border-theme-border rounded-none focus:outline-none" title="Play/Pause">
+                        <span id="icon-play" class="flex items-center">
+                            <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <polygon points="5 3 19 12 5 21 5 3"/>
+                            </svg>
+                        </span>
+                        <span id="icon-pause" class="hidden flex items-center">
+                            <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <rect x="6" y="4" width="4" height="16"/>
+                                <rect x="14" y="4" width="4" height="16"/>
+                            </svg>
+                        </span>
+                    </button>
+                    <!-- FF Button -->
+                    <button id="btn-ff" class="flex items-center justify-center w-12 py-1.5 hover:bg-theme-border hover:text-theme-brand transition-colors text-gray-400 rounded-none focus:outline-none" title="Finish Shoe Instantly">
+                        <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <polygon points="13 19 22 12 13 5 13 19"/>
+                            <polygon points="2 19 11 12 2 5 2 19"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="flex-grow flex flex-col max-w-7xl mx-auto w-full p-4 overflow-hidden">
+        
+        <!-- Navigation Tabs -->
+        <div class="flex gap-2 border-b border-theme-border flex-shrink-0 mb-4">
+            <button data-tab="chart" class="tab-btn active flex items-center gap-2 px-4 py-2 text-sm font-medium transition-colors text-gray-500 hover:text-gray-200 rounded-none focus:outline-none">
+                <i data-lucide="trending-up" class="w-4 h-4"></i> Performance
+            </button>
+            <button data-tab="road" class="tab-btn flex items-center gap-2 px-4 py-2 text-sm font-medium transition-colors text-gray-500 hover:text-gray-200 rounded-none focus:outline-none">
+                <i data-lucide="layout-grid" class="w-4 h-4"></i> Big Road
+            </button>
+            <button data-tab="log" class="tab-btn flex items-center gap-2 px-4 py-2 text-sm font-medium transition-colors text-gray-500 hover:text-gray-200 rounded-none focus:outline-none">
+                <i data-lucide="list" class="w-4 h-4"></i> Game Log
+            </button>
+        </div>
+
+        <!-- Tab Contents -->
+        <div class="flex-grow min-h-0 relative">
+            
+            <!-- CHART TAB -->
+            <div id="tab-content-chart" class="h-full w-full bg-theme-panel p-4 border border-theme-border shadow-xl flex flex-col rounded-none">
+                <div class="flex-grow min-h-0 relative w-full h-full">
+                    <canvas id="performanceChart"></canvas>
+                </div>
+            </div>
+
+            <!-- ROAD TAB -->
+            <div id="tab-content-road" class="hidden h-full bg-theme-panel p-4 border border-theme-border shadow-xl overflow-auto flex flex-col rounded-none">
+                <div id="big-road-container" class="border border-gray-700 bg-white/5 shadow-lg p-2 max-w-full w-fit rounded-none">
+                    <!-- Grid generated by JS -->
+                </div>
+                <div class="mt-4 text-xs text-gray-400 flex gap-4">
+                    <div class="flex items-center gap-2"><div class="w-3 h-3 rounded-full border border-red-600"></div> Banker</div>
+                    <div class="flex items-center gap-2"><div class="w-3 h-3 rounded-full border border-blue-500"></div> Player</div>
+                    <div class="flex items-center gap-2"><div class="w-1.5 h-1.5 rounded-full bg-green-600"></div> Ties</div>
+                </div>
+            </div>
+
+            <!-- LOG TAB -->
+            <div id="tab-content-log" class="hidden h-full bg-theme-panel border border-theme-border shadow-xl overflow-hidden flex flex-col rounded-none">
+                <div id="game-log-container" class="overflow-auto h-full scroll-smooth">
+                    <table class="w-full text-left text-sm text-gray-400 relative border-collapse">
+                        <thead class="text-xs text-white uppercase bg-black/50 sticky top-0 z-10 shadow-sm font-bold border-b border-theme-border">
+                            <tr>
+                                <th class="px-4 py-3">#</th>
+                                <th class="px-4 py-3">Result</th>
+                                <th class="px-4 py-3 text-center">T-Cards</th>
+                                <th class="px-4 py-3 text-center">Bet</th>
+                                <th class="px-4 py-3 text-right">Running</th>
+                            </tr>
+                        </thead>
+                        <tbody id="game-log-body">
+                            <tr>
+                                <td colspan="5" class="px-4 py-8 text-center text-gray-600 italic">
+                                    No hands played yet.
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- App Logic -->
+    <script>
+        /**
+         * ------------------------------------------------------------------
+         * Constants & Types
+         * ------------------------------------------------------------------
+         */
+        const Winner = {
+            PLAYER: 'PLAYER',
+            BANKER: 'BANKER',
+            TIE: 'TIE',
+        };
+
+        const DECK_COUNT = 8;
+        const SUITS = ['♠', '♥', '♦', '♣'];
+        const RANKS = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
+        const CUT_CARD_PADDING = 14;
+
+        /**
+         * ------------------------------------------------------------------
+         * Engine Logic
+         * ------------------------------------------------------------------
+         */
+        class BaccaratEngine {
+            constructor() {
+                this.shoe = [];
+            }
+
+            createDeck() {
+                const deck = [];
+                for (const suit of SUITS) {
+                    for (const rank of RANKS) {
+                        let value = 0;
+                        if (['10', 'J', 'Q', 'K'].includes(rank)) value = 0;
+                        else if (rank === 'A') value = 1;
+                        else value = parseInt(rank);
+                        deck.push({ suit, rank, value });
+                    }
+                }
+                return deck;
+            }
+
+            reshuffle() {
+                let cards = [];
+                for (let i = 0; i < DECK_COUNT; i++) {
+                    cards = cards.concat(this.createDeck());
+                }
+                // Fisher-Yates Shuffle
+                for (let i = cards.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [cards[i], cards[j]] = [cards[j], cards[i]];
+                }
+                this.shoe = cards;
+            }
+
+            initShoe() {
+                this.reshuffle();
+                this.burnCards();
+            }
+
+            burnCards() {
+                if (this.shoe.length === 0) return;
+                const indicatorCard = this.shoe.pop();
+                let burnCount = 0;
+                
+                if (['10', 'J', 'Q', 'K'].includes(indicatorCard.rank)) {
+                    burnCount = 10;
+                } else if (indicatorCard.rank === 'A') {
+                    burnCount = 1;
+                } else {
+                    burnCount = parseInt(indicatorCard.rank);
+                }
+
+                for (let i = 0; i < burnCount; i++) {
+                    if (this.shoe.length > 0) this.shoe.pop();
+                }
+            }
+
+            drawCard() {
+                if (this.shoe.length === 0) throw new Error("Shoe empty");
+                return this.shoe.pop();
+            }
+
+            calculateScore(cards) {
+                const sum = cards.reduce((acc, card) => acc + card.value, 0);
+                return sum % 10;
+            }
+
+            hasCards() {
+                return this.shoe.length > CUT_CARD_PADDING;
+            }
+
+            /**
+             * Strategy Logic:
+             * - If previous hand was a Natural (4 cards total): Bet BANKER.
+             * - Otherwise (3rd card engaged, 5 or 6 cards total): Bet PLAYER.
+             */
+            getStrategyBet(history) {
+                if (history.length === 0) return null;
+                
+                // Strategy typically relies on the LAST meaningful hand result
+                // even if it was a tie, the strategy is about the PHYSICAL card count of that hand.
+                const lastHand = history[history.length - 1];
+                
+                if (lastHand.totalCards === 4) {
+                    return Winner.BANKER;
+                } else {
+                    return Winner.PLAYER;
+                }
+            }
+
+            dealNextHand(history, currentBalance) {
+                if (!this.hasCards()) return null;
+
+                const handId = history.length + 1;
+                const strategyBet = this.getStrategyBet(history);
+                
+                // Initial cards
+                const playerCards = [this.drawCard(), this.drawCard()];
+                const bankerCards = [this.drawCard(), this.drawCard()];
+
+                let playerScore = this.calculateScore(playerCards);
+                let bankerScore = this.calculateScore(bankerCards);
+                
+                let totalCards = 4;
+
+                // Check for Natural
+                if (playerScore >= 8 || bankerScore >= 8) {
+                    // No more cards drawn
+                } else {
+                    // Player Third Card Rule
+                    let playerThirdCard = null;
+                    if (playerScore <= 5) {
+                        playerThirdCard = this.drawCard();
+                        playerCards.push(playerThirdCard);
+                        playerScore = this.calculateScore(playerCards);
+                        totalCards++;
+                    }
+
+                    // Banker Third Card Rule
+                    let bankerDraws = false;
+                    if (!playerThirdCard) {
+                        if (bankerScore <= 5) bankerDraws = true;
+                    } else {
+                        const p3Val = playerThirdCard.value;
+                        if (bankerScore <= 2) bankerDraws = true;
+                        else if (bankerScore === 3 && p3Val !== 8) bankerDraws = true;
+                        else if (bankerScore === 4 && [2,3,4,5,6,7].includes(p3Val)) bankerDraws = true;
+                        else if (bankerScore === 5 && [4,5,6,7].includes(p3Val)) bankerDraws = true;
+                        else if (bankerScore === 6 && [6,7].includes(p3Val)) bankerDraws = true;
+                    }
+
+                    if (bankerDraws) {
+                        bankerCards.push(this.drawCard());
+                        bankerScore = this.calculateScore(bankerCards);
+                        totalCards++;
+                    }
+                }
+
+                let winner = Winner.TIE;
+                if (playerScore > bankerScore) winner = Winner.PLAYER;
+                if (bankerScore > playerScore) winner = Winner.BANKER;
+
+                // Calculate PnL
+                let pnl = 0;
+                let outcome = 'NO_BET';
+
+                if (strategyBet) {
+                    if (winner === strategyBet) {
+                        pnl = 1;
+                        outcome = 'WIN';
+                    } else if (winner === Winner.TIE) {
+                        pnl = 0;
+                        outcome = 'PUSH';
+                    } else {
+                        pnl = -1;
+                        outcome = 'LOSS';
+                    }
+                }
+
+                const newBalance = currentBalance + pnl;
+
+                return {
+                    id: handId,
+                    playerScore,
+                    bankerScore,
+                    winner,
+                    outcome,
+                    pnl,
+                    betPlaced: strategyBet,
+                    runningBalance: newBalance,
+                    totalCards
+                };
+            }
+        }
+
+        /**
+         * ------------------------------------------------------------------
+         * UI Renderers
+         * ------------------------------------------------------------------
+         */
+        
+        let chartInstance = null;
+        const initChart = () => {
+            const ctx = document.getElementById('performanceChart').getContext('2d');
+            Chart.defaults.color = '#64748b'; 
+            Chart.defaults.borderColor = '#171717';
+
+            chartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    datasets: [{
+                        label: 'Profit/Loss',
+                        data: [{x: 0, y: 0}],
+                        borderColor: '#38BDF8',
+                        backgroundColor: '#38BDF8',
+                        borderWidth: 2.5,
+                        tension: 0.1,
+                        pointRadius: 0,
+                        fill: false
+                    }, {
+                        label: '5-Period MA',
+                        data: [],
+                        borderColor: '#50ad0e',
+                        borderWidth: 1.5,
+                        tension: 0.4,
+                        pointRadius: 0,
+                        fill: false
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    animation: false,
+                    events: [],
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: { enabled: false }
+                    },
+                    scales: {
+                        x: {
+                            type: 'linear',
+                            min: 0,
+                            max: 80, 
+                            grid: { color: '#171717' },
+                            ticks: { color: '#4b5563', stepSize: 10 }
+                        },
+                        y: {
+                            min: -20, 
+                            max: 20,  
+                            grid: { color: '#171717' },
+                            ticks: { color: '#4b5563', stepSize: 5 }
+                        }
+                    }
+                }
+            });
+        };
+
+        const updateChart = (history) => {
+            const dataPoints = [{x: 0, y: 0}];
+            const maPoints = [];
+            let chartX = 0;
+            
+            history.forEach(hand => {
+                if (hand.winner !== Winner.TIE) {
+                    chartX++;
+                    dataPoints.push({
+                        x: chartX,
+                        y: hand.runningBalance
+                    });
+                }
+            });
+
+            // Calculate 5-period moving average
+            for (let i = 0; i < dataPoints.length; i++) {
+                if (i >= 4) {
+                    let sum = 0;
+                    for (let j = 0; j < 5; j++) {
+                        sum += dataPoints[i - j].y;
+                    }
+                    maPoints.push({
+                        x: dataPoints[i].x,
+                        y: sum / 5
+                    });
+                }
+            }
+
+            chartInstance.data.datasets[0].data = dataPoints;
+            chartInstance.data.datasets[1].data = maPoints;
+            chartInstance.update();
+        };
+
+        const renderBigRoad = (history) => {
+            const COLS = 6; 
+            const container = document.getElementById('big-road-container');
+            
+            const grid = []; 
+            const beads = [];
+            let currentTieCount = 0;
+
+            history.forEach(hand => {
+                if (hand.winner === Winner.TIE) {
+                    currentTieCount++;
+                } else {
+                    beads.push({ winner: hand.winner, tieCount: currentTieCount });
+                    currentTieCount = 0;
+                }
+            });
+
+            let prevWinner = null;
+            let currRow = 0;
+            let currCol = 0;
+
+            beads.forEach((bead, index) => {
+                if (index === 0) {
+                    grid[0] = Array(COLS).fill(null);
+                    grid[0][0] = bead;
+                    prevWinner = bead.winner;
+                    return;
+                }
+
+                while (grid.length <= currRow) grid.push(Array(COLS).fill(null));
+
+                if (bead.winner === prevWinner) {
+                    const nextCol = currCol + 1;
+                    if (nextCol < COLS && !grid[currRow][nextCol]) {
+                        currCol = nextCol;
+                    } else {
+                        currRow++;
+                    }
+                } else {
+                    let targetRow = 0;
+                    while (grid[targetRow] && grid[targetRow][0] !== null) targetRow++;
+                    currRow = targetRow;
+                    currCol = 0;
+                }
+
+                while (grid.length <= currRow) grid.push(Array(COLS).fill(null));
+                grid[currRow][currCol] = bead;
+                prevWinner = bead.winner;
+            });
+
+            if (grid.length === 0) grid.push(Array(COLS).fill(null));
+
+            const ROWS = grid.length;
+            let html = `<div class="grid border-t border-l border-theme-border bg-[#000000] gap-0" style="grid-template-columns: repeat(${COLS}, 16px); grid-template-rows: repeat(${ROWS}, 16px);">`;
+            
+            for (let r = 0; r < ROWS; r++) {
+                for (let c = 0; c < COLS; c++) {
+                    const cell = grid[r] ? grid[r][c] : null;
+                    let content = '';
+                    if (cell) {
+                        const colorClass = cell.winner === Winner.PLAYER ? 'border-blue-500' : 'border-red-500';
+                        const tieBadge = cell.tieCount > 0 
+                            ? `<div class="absolute -top-[2px] -right-[2px] bg-green-600 rounded-full w-1.5 h-1.5 border border-black"></div>` 
+                            : '';
+                        content = `<div class="w-3 h-3 rounded-full border ${colorClass} relative box-border bg-transparent">${tieBadge}</div>`;
+                    }
+                    html += `<div class="w-4 h-4 bg-[#0a0a0a] border-r border-b border-theme-border flex items-center justify-center overflow-visible">${content}</div>`;
+                }
+            }
+            html += `</div>`;
+            container.innerHTML = html;
+        };
+
+        const renderGameLog = (history) => {
+            const tbody = document.getElementById('game-log-body');
+            
+            if (history.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" class="px-4 py-8 text-center text-gray-600 italic">No hands played yet.</td></tr>`;
+                return;
+            }
+
+            let html = '';
+            [...history].reverse().slice(0, 100).forEach(hand => {
+                let betDisplay = '-';
+                if (hand.betPlaced) {
+                    betDisplay = hand.betPlaced === Winner.PLAYER 
+                        ? '<span class="text-blue-500 font-bold">P</span>' 
+                        : '<span class="text-red-400 font-bold">B</span>';
+                }
+
+                let winnerText = 'T';
+                let colorClass = 'text-gray-500';
+                
+                if (hand.winner === Winner.PLAYER) {
+                    winnerText = 'P';
+                    colorClass = 'text-blue-500';
+                } else if (hand.winner === Winner.BANKER) {
+                    winnerText = 'B';
+                    colorClass = 'text-red-400';
+                }
+                
+                const resultDisplay = `<span class="${colorClass} font-bold text-lg">${winnerText}</span> <span class="text-gray-500 text-xs ml-2">(${hand.playerScore}-${hand.bankerScore})</span>`;
+                const runSumColor = hand.runningBalance > 0 ? 'text-green-400' : (hand.runningBalance < 0 ? 'text-red-400' : 'text-gray-500');
+                const runSumDisplay = `<span class="${runSumColor} font-bold">${hand.runningBalance > 0 ? '+' : ''}${hand.runningBalance}</span>`;
+
+                const totalCardsDisplay = `<span class="${hand.totalCards === 4 ? 'text-theme-brand' : 'text-gray-500'} font-bold">${hand.totalCards}</span>`;
+
+                html += `
+                    <tr class="border-b border-gray-800 hover:bg-white/5 transition-colors">
+                        <td class="px-4 py-2 font-mono text-xs text-gray-500">${hand.id}</td>
+                        <td class="px-4 py-2 font-medium">${resultDisplay}</td>
+                        <td class="px-4 py-2 text-center">${totalCardsDisplay}</td>
+                        <td class="px-4 py-2 text-center">${betDisplay}</td>
+                        <td class="px-4 py-2 text-right">${runSumDisplay}</td>
+                    </tr>
+                `;
+            });
+            tbody.innerHTML = html;
+        };
+
+        /**
+         * ------------------------------------------------------------------
+         * Controller
+         * ------------------------------------------------------------------
+         */
+        const engine = new BaccaratEngine();
+
+        let gameState = {
+            active: false,
+            history: [],
+            balance: 0,
+            timerId: null
+        };
+
+        const btnToggle = document.getElementById('btn-toggle');
+        const iconPlay = document.getElementById('icon-play');
+        const iconPause = document.getElementById('icon-pause');
+        const btnFf = document.getElementById('btn-ff');
+        const speedSelect = document.getElementById('speed-select');
+        const tabs = document.querySelectorAll('.tab-btn');
+        const contents = {
+            chart: document.getElementById('tab-content-chart'),
+            road: document.getElementById('tab-content-road'),
+            log: document.getElementById('tab-content-log'),
+        };
+
+        const setToggleState = (isPlaying) => {
+            if (isPlaying) {
+                iconPlay.classList.add('hidden');
+                iconPause.classList.remove('hidden');
+                btnToggle.classList.add('text-theme-brand');
+            } else {
+                iconPlay.classList.remove('hidden');
+                iconPause.classList.add('hidden');
+                btnToggle.classList.remove('text-theme-brand');
+            }
+        };
+
+        const resetGame = () => {
+            if (gameState.timerId) clearTimeout(gameState.timerId);
+            gameState = {
+                active: true,
+                history: [],
+                balance: 0,
+                timerId: null
+            };
+            engine.initShoe();
+            updateAllUI();
+        };
+
+        const stopGame = () => {
+             if (gameState.timerId) clearTimeout(gameState.timerId);
+             gameState.active = false;
+             gameState.timerId = null;
+             setToggleState(false);
+        };
+
+        const updateAllUI = () => {
+            updateChart(gameState.history);
+            renderBigRoad(gameState.history);
+            renderGameLog(gameState.history);
+        };
+
+        const processStep = () => {
+            if (!engine.hasCards()) {
+                stopGame();
+                return;
+            }
+
+            const handResult = engine.dealNextHand(gameState.history, gameState.balance);
+            if (!handResult) {
+                stopGame();
+                return;
+            }
+            
+            gameState.history.push(handResult);
+            gameState.balance = handResult.runningBalance;
+
+            updateAllUI();
+
+            const delay = parseInt(speedSelect.value, 10);
+            gameState.timerId = setTimeout(processStep, delay);
+        };
+
+        const finishInstantly = () => {
+            if (gameState.timerId) clearTimeout(gameState.timerId);
+            gameState.timerId = null;
+
+            while (engine.hasCards()) {
+                const handResult = engine.dealNextHand(gameState.history, gameState.balance);
+                if (!handResult) break;
+                gameState.history.push(handResult);
+                gameState.balance = handResult.runningBalance;
+            }
+
+            updateAllUI();
+            stopGame();
+        };
+
+        btnToggle.addEventListener('click', () => {
+            if (gameState.active && gameState.timerId) {
+                clearTimeout(gameState.timerId);
+                gameState.timerId = null;
+                setToggleState(false);
+            } 
+            else if (gameState.active && !gameState.timerId) {
+                processStep();
+                setToggleState(true);
+            }
+            else {
+                resetGame();
+                processStep();
+                setToggleState(true);
+            }
+        });
+
+        btnFf.addEventListener('click', () => {
+            if (gameState.active) {
+                finishInstantly();
+            } else {
+                resetGame();
+                finishInstantly();
+            }
+            setToggleState(false);
+        });
+
+        tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                tabs.forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                Object.values(contents).forEach(el => el.classList.add('hidden'));
+                contents[tab.dataset.tab].classList.remove('hidden');
+            });
+        });
+
+        window.addEventListener('load', () => {
+            lucide.createIcons();
+            initChart();
+        });
+    </script>
+<script type="module" src="/index.tsx"></script>
+</body>
+</html>
