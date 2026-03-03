@@ -280,11 +280,18 @@
             getStrategyBet(history) {
                 if (history.length === 0) return null;
                 
-                // Strategy typically relies on the LAST meaningful hand result
-                // even if it was a tie, the strategy is about the PHYSICAL card count of that hand.
-                const lastHand = history[history.length - 1];
+                // Find the last non-tie hand
+                let lastMeaningfulHand = null;
+                for (let i = history.length - 1; i >= 0; i--) {
+                    if (history[i].winner !== Winner.TIE) {
+                        lastMeaningfulHand = history[i];
+                        break;
+                    }
+                }
+
+                if (!lastMeaningfulHand) return null;
                 
-                if (lastHand.totalCards === 4) {
+                if (lastMeaningfulHand.totalCards === 4) {
                     return Winner.BANKER;
                 } else {
                     return Winner.PLAYER;
