@@ -17,7 +17,7 @@
                             base: '#000000',    // Pitch black
                             panel: '#0a0a0a',   // Almost black
                             border: '#171717',  // Very dark gray
-                            brand: '#38BDF8',   // Electric Blue
+                            brand: '#E41A1C',   // Red
                             text: '#e2e8f0'
                         }
                     }
@@ -35,8 +35,8 @@
     <style>
         /* Tab active state styling */
         .tab-btn.active {
-            border-bottom-color: #38BDF8; /* Brand color */
-            color: #38BDF8; 
+            border-bottom-color: #E41A1C; /* Brand color */
+            color: #E41A1C; 
         }
         .tab-btn {
             border-bottom-width: 2px;
@@ -51,16 +51,16 @@
             background: #000000; 
         }
         ::-webkit-scrollbar-thumb {
-            background: #38BDF8; 
+            background: #E41A1C; 
             border-radius: 0px; /* Sharp corners */
         }
         ::-webkit-scrollbar-thumb:hover {
-            background: #0C4A6E; /* Darker shade of brand */
+            background: #b01416; /* Darker shade of brand */
         }
     </style>
 <link rel="stylesheet" href="/index.css">
 </head>
-<body class="bg-theme-base text-gray-300 overflow-hidden h-screen flex flex-col font-sans selection:bg-[#38BDF8] selection:text-white">
+<body class="bg-theme-base text-gray-300 overflow-hidden h-screen flex flex-col font-sans selection:bg-[#E41A1C] selection:text-white">
 
     <!-- Header -->
     <header class="bg-theme-panel border-b border-theme-border p-4 shadow-lg flex-shrink-0 z-20">
@@ -69,8 +69,8 @@
             <!-- Title -->
             <div class="flex items-center">
                 <svg width="90" height="32" viewBox="0 0 90 32" fill="none" xmlns="http://www.w3.org/2000/svg" class="h-8 w-auto">
-                    <rect width="90" height="32" rx="2" fill="#38BDF8"/>
-                    <text x="45" y="22" text-anchor="middle" fill="black" font-family="Inter, system-ui, sans-serif" font-weight="900" font-size="16" letter-spacing="0.05em">NW-B</text>
+                    <rect width="90" height="32" rx="2" fill="#E41A1C"/>
+                    <text x="45" y="22" text-anchor="middle" fill="white" font-family="Inter, system-ui, sans-serif" font-weight="900" font-size="16" letter-spacing="0.05em">NW-B</text>
                 </svg>
             </div>
 
@@ -394,8 +394,8 @@
                     datasets: [{
                         label: 'Profit/Loss',
                         data: [{x: 0, y: 0}],
-                        borderColor: '#38BDF8',
-                        backgroundColor: '#38BDF8',
+                        borderColor: '#E41A1C',
+                        backgroundColor: '#E41A1C',
                         borderWidth: 2.5,
                         tension: 0.1,
                         pointRadius: 0,
@@ -403,7 +403,7 @@
                     }, {
                         label: '5-Period MA',
                         data: [],
-                        borderColor: '#50ad0e',
+                        borderColor: '#377EB8',
                         borderWidth: 1.5,
                         tension: 0.4,
                         pointRadius: 0,
